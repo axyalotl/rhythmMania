@@ -1,5 +1,6 @@
 # rhythmMania
 Project by Anya R, Esther O, Heidi W, and Abdul I 
+
 Simple rhythm game with two difficulty modes.
 
 How to play: 
