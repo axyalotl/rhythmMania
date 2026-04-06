@@ -104,12 +104,22 @@ class Game {
   float targetX = 150; 
   float targetY; 
   
+  // feedback variables
+  String displayText;
+  int feedbackTimer;
+  int combo;
+  color feedbackColor;
+  
   Game(int setBpm) {
     bpm = setBpm;
     msPerBeat = 60000 / bpm; 
     activeNotes = new ArrayList<Note>();
     lastBeatTime = millis();
     score = 0;
+    displayText = "";
+    feedbackTimer = 0;
+    combo = 0;
+    feedbackColor = color(255);
   }
   
   //Main Game play loop called from draw
@@ -141,11 +151,16 @@ class Game {
       n.display();
       
       // remove note if it passes the left edge of the screen
-      if (n.x < -50) {
+      if (n.x < targetX - 75) {
+        // miss logic
         activeNotes.remove(i);
-        // TODO: Handle 'Miss' logic and reset combo here
+        combo = 0;
+        displayText = "MISS";
+        feedbackColor = color(255, 50, 50);
+        feedbackTimer = 30;
       }
     }
+    
     
     // display Score UI
     textAlign(LEFT, TOP);
@@ -153,6 +168,14 @@ class Game {
     textSize(24);
     text("Score: " + score, 20, 20);
     text("BPM: " + bpm, 20, 50);
+    
+    if (feedbackTimer > 0) {
+      fill(feedbackColor);
+      textSize(32);
+      textAlign(CENTER, CENTER);
+      text(displayText, targetX, targetY - 100);
+      feedbackTimer -= 1;
+    }
   }
   
   //timing system for notes. predefines when notes appear based on BPM.
@@ -166,11 +189,72 @@ class Game {
   
   // detect arrow key presses and check timing accuracy (hit window)
   void checkInput(int kCode) {
-    // TODO: Loop through activeNotes in Stage 2
     // 1. Find the note closest to targetX
     // 2. Check if the distance is within your +/- 200ms hit window
     // 3. Check if the kCode matches the Note's direction
     // 4. Update score and play sound effect based on Perfect/Good/Miss
+    
+    // default value: -1, for non-arrow key 
+    int direction = -1;
+    // maps arrow keys to one of 4 possible directions
+    if (kCode == LEFT) {
+      direction = 0;
+    }
+    else if (kCode == UP) {
+      direction = 1;
+    }
+    else if (kCode == DOWN) {
+      direction =2;
+    }
+    else if (kCode == RIGHT) {
+      direction = 3;
+    }
+    // exit function if none of the arrow keys are pressed 
+    if (direction == -1) {
+      return;
+    }
+    // make sure notes are on screen
+    if (activeNotes.size() > 0) {
+      // get note closest to target circle
+      Note frontNote = activeNotes.get(0);
+      // calculate distance from circle
+      float distance = abs(frontNote.x - targetX);
+      // only make note hittable if < 50 pixels
+      if (distance < 50) {
+        // check if correct arrow key pressed, update score and display text accordingly.
+        if (frontNote.direction == direction) {
+          if (distance < 10) {
+            score += 100;
+            combo += 1;
+            feedbackColor = color(0, 255, 255);
+            displayText = "PERFECT";
+          }
+          else if (distance < 20) {
+            score += 50;
+            combo += 1;
+            feedbackColor = color(50, 255, 50);
+            displayText = "GOOD";
+          }
+          else {
+            score += 25;
+            combo = 0;
+            feedbackColor = color(255, 150, 0);
+            displayText = "POOR";
+          }
+        // miss
+        } else {
+          score += 0;
+          combo = 0;
+          feedbackColor = color(255, 50, 50);
+          displayText = "MISS";
+
+        }
+        // timer for how long text appears on screen
+        feedbackTimer = 30;
+        // remove note when done
+        activeNotes.remove(0);
+      }
+    }
   }
 }
 
