@@ -1,33 +1,66 @@
+import processing.sound.*;
+
 // Final Project 1
 // global variables
 int gameState = 0; // 0: Menu, 1: HowToPlay, 2: Easy, 3: Hard
 Game currentGame;
+int finalScore = 0; // Stores the score to show on the end screen
 // TODO: insert media into data folder
 // PImage mikuDance, bgImage, noteIcon;
 // SoundFile easySong, hardSong, hitSound, clickSound;
+PImage bgMain, bgEasy, bgHard, mikuImg;
+SoundFile sfxPerfect, sfxPop, bgmMenu, songEasy, songHard;
 
 // SETUP
 void setup() {
   size(800, 600);
   
+  
   // TODO: Load images and sounds here
   // mikuDance = loadImage("miku.png");
   // hitSound = new SoundFile(this, "perfect_hit.wav");
+  // --- Load Images ---
+  bgMain = loadImage("background.jpg");
+  bgEasy = loadImage("ez_mode_background.jpg");
+  // NOTE: Converted from webp to jpg for Processing compatibility
+  bgHard = loadImage("hard_mode_background.jpg"); 
+  mikuImg = loadImage("hatsune-miku.png");
+  
+  // --- Load Audio ---
+  sfxPerfect = new SoundFile(this, "perfect.mp3");
+  sfxPop = new SoundFile(this, "pop.wav");
+  bgmMenu = new SoundFile(this, "Perfume cut.mp3");
+  songEasy = new SoundFile(this, "Replay cut.mp3");
+  songHard = new SoundFile(this, "True Romance cut.mp3");
+  
+  // Start menu music on loop right away
+  bgmMenu.loop();
 }
 
 // main screen for navigation
 void draw() {
-  background(30);
   
   if (gameState == 0) {
     // menu
+    image(bgMain, 0, 0, width, height);
     menu();
   } else if (gameState == 1) {
+    image(bgMain, 0, 0, width, height);
     // how to play
     userManual();
-  } else if (gameState == 2 || gameState == 3) {
-    // easy and hard mode
-    currentGame.game(); // main gameplay loop
+  } else if (gameState == 2) {
+    tint(80); 
+    image(bgEasy, 0, 0, width, height);
+    noTint(); 
+    currentGame.game(); 
+  } else if (gameState == 3) {
+    tint(80); 
+    image(bgHard, 0, 0, width, height);
+    noTint(); 
+    currentGame.game(); 
+  } else if (gameState == 4) {
+    image(bgMain, 0, 0, width, height); // Show menu background
+    gameOverScreen(); // Show results
   }
 }
 
@@ -45,6 +78,10 @@ void menu() {
   text("Press 'H' for Hard Mode (160 BPM)", width/2, height/2 + 50);
   text("Press 'M' for User Manual", width/2, height/2 + 80);
   text("Press 'Q' to Quit", width/2, height/2 + 110);
+  
+  if (mikuImg != null) {
+    image(mikuImg, width - 200, height - 200, 150, 150); 
+  }
 }
 
 // text display + iages for how to play the game
@@ -62,29 +99,86 @@ void userManual() {
   text("Press 'B' to return to Menu", width/2, height/2 + 100);
 }
 
+// game over screen
+void gameOverScreen() {
+  textAlign(CENTER, CENTER);
+  
+  float titleY = height/2 - 60;
+  float scoreY = height/2 + 10;
+  String titleText = "SONG COMPLETE!";
+  String scoreText = "Final Score: " + finalScore;
+  
+  // --- Title Text with Outline ---
+  textSize(50);
+  fill(0); // Black outline
+  text(titleText, width/2 - 3, titleY);
+  text(titleText, width/2 + 3, titleY);
+  text(titleText, width/2, titleY - 3);
+  text(titleText, width/2, titleY + 3);
+  
+  fill(255); // White main text
+  text(titleText, width/2, titleY);
+  
+  // --- Score Text with Outline ---
+  textSize(40);
+  fill(0); // Black outline
+  text(scoreText, width/2 - 3, scoreY);
+  text(scoreText, width/2 + 3, scoreY);
+  text(scoreText, width/2, scoreY - 3);
+  text(scoreText, width/2, scoreY + 3);
+  
+  fill(0, 255, 255); // Cyan main text
+  text(scoreText, width/2, scoreY);
+  
+  // Instruction text
+  fill(255, 255, 0);
+  textSize(24);
+  text("Press 'B' to return to Menu", width/2, height/2 + 100);
+}
 
 // INTERACTIONS
 //Detects key presses to navigate menus and pass input to the game.
 
 void keyPressed() {
-  // exit the game at any time
   if (key == 'q' || key == 'Q') {
     exit(); 
   }
+  
   if (gameState == 0) {
     if (key == 'e' || key == 'E') {
-      currentGame = new Game(100); // 100 BPM for Easy
+      // Audio transition and safety stops
+      bgmMenu.stop();
+      songHard.stop(); 
+      songEasy.stop();
+      
+      songEasy.play();
+      currentGame = new Game(100, 7.0, songEasy);
       gameState = 2;
+      
     } else if (key == 'h' || key == 'H') {
-      currentGame = new Game(160); // 160 BPM for Hard
-      gameState = 3;
+      // Audio transition and safety stops
+      bgmMenu.stop();
+      songEasy.stop(); 
+      songHard.stop();
+      
+      songHard.play();
+      // FIXED: Now properly sets up the Hard game, 160 BPM, speed 13.0, hard track
+      currentGame = new Game(160, 13.0, songHard); 
+      gameState = 3; 
+      
     } else if (key == 'm' || key == 'M') {
       gameState = 1;
     }
   } else if (gameState == 1 || gameState == 4) {
-    if (key == 'b' || key == 'B') gameState = 0;
+    if (key == 'b' || key == 'B') {
+      // Ensure all game songs are fully stopped when returning to menu
+      songEasy.stop();
+      songHard.stop();
+      if (!bgmMenu.isPlaying()) bgmMenu.loop(); 
+      gameState = 0;
+    }
   } else if (gameState == 2 || gameState == 3) {
-    currentGame.checkInput(keyCode); // start game 
+    currentGame.checkInput(keyCode); 
   }
 }
 
@@ -99,6 +193,9 @@ class Game {
   int lastBeatTime;
   ArrayList<Note> activeNotes;
   int score;
+  float currentSpeed; // Passed to the notes
+  SoundFile track;    // The song currently playing
+  int gameStartTime;  // Tracks when the level started
   
   // target zone properties
   float targetX = 150; 
@@ -110,11 +207,16 @@ class Game {
   int combo;
   color feedbackColor;
   
-  Game(int setBpm) {
+  Game(int setBpm, float noteSpeed, SoundFile currentTrack) {
     bpm = setBpm;
     msPerBeat = 60000 / bpm; 
+    currentSpeed = noteSpeed;
+    track = currentTrack;
+    
     activeNotes = new ArrayList<Note>();
     lastBeatTime = millis();
+    gameStartTime = millis();
+    
     score = 0;
     displayText = "";
     feedbackTimer = 0;
@@ -124,6 +226,12 @@ class Game {
   
   //Main Game play loop called from draw
   void game() {
+    // If 1000ms has passed (giving the song time to start) AND the song stops playing
+    if (millis() - gameStartTime > 1000 && !track.isPlaying()) {
+      finalScore = score; // Save the score globally
+      gameState = 4;      // Move to Game Over screen
+      return;             // Stop drawing the game
+    }
     // center the track vertically
     targetY = height / 2; 
     
@@ -182,7 +290,7 @@ class Game {
   void spawnNotes() {
     if (millis() - lastBeatTime >= msPerBeat) {
       int randomDirection = int(random(4)); // 0: Left, 1: Up, 2: Down, 3: Right
-      activeNotes.add(new Note(randomDirection, height/2));
+      activeNotes.add(new Note(randomDirection, height/2, currentSpeed));
       lastBeatTime = millis();
     }
   }
@@ -228,18 +336,21 @@ class Game {
             combo += 1;
             feedbackColor = color(0, 255, 255);
             displayText = "PERFECT";
+            sfxPerfect.play();
           }
           else if (distance < 20) {
             score += 50;
             combo += 1;
             feedbackColor = color(50, 255, 50);
             displayText = "GOOD";
+            sfxPop.play();
           }
           else {
             score += 25;
             combo = 0;
             feedbackColor = color(255, 150, 0);
             displayText = "POOR";
+            sfxPop.play();
           }
         // miss
         } else {
@@ -263,12 +374,13 @@ class Note {
   // horizontal scroll speed
   float x, y;
   int direction; 
-  float speed = 5.0; 
+  float speed; 
   
-  // spawn slightly off screen from right to left
-  Note(int dir, float trackY) {
+  // Note constructor now takes a custom speed
+  Note(int dir, float trackY, float nSpeed) {
     direction = dir;
     y = trackY; 
+    speed = nSpeed;
     x = width + 50; 
   }
   
