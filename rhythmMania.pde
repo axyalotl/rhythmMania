@@ -15,25 +15,26 @@ SoundFile sfxPerfect, sfxPop, bgmMenu, songEasy, songHard;
 void setup() {
   size(800, 600);
   
+  frameRate(30); 
+  smooth(4);
   
   // TODO: Load images and sounds here
   // mikuDance = loadImage("miku.png");
   // hitSound = new SoundFile(this, "perfect_hit.wav");
-  // --- Load Images ---
+  // load Images
   bgMain = loadImage("background.jpg");
   bgEasy = loadImage("ez_mode_background.jpg");
-  // NOTE: Converted from webp to jpg for Processing compatibility
   bgHard = loadImage("hard_mode_background.jpg"); 
   mikuImg = loadImage("hatsune-miku.png");
   
-  // --- Load Audio ---
+  // load audio
   sfxPerfect = new SoundFile(this, "perfect.mp3");
   sfxPop = new SoundFile(this, "pop.wav");
   bgmMenu = new SoundFile(this, "Perfume cut.mp3");
   songEasy = new SoundFile(this, "Replay cut.mp3");
   songHard = new SoundFile(this, "True Romance cut.mp3");
   
-  // Start menu music on loop right away
+  // start menu music on loop
   bgmMenu.loop();
 }
 
@@ -108,7 +109,6 @@ void gameOverScreen() {
   String titleText = "SONG COMPLETE!";
   String scoreText = "Final Score: " + finalScore;
   
-  // --- Title Text with Outline ---
   textSize(50);
   fill(0); // Black outline
   text(titleText, width/2 - 3, titleY);
@@ -119,7 +119,7 @@ void gameOverScreen() {
   fill(255); // White main text
   text(titleText, width/2, titleY);
   
-  // --- Score Text with Outline ---
+  // score Text with Outline
   textSize(40);
   fill(0); // Black outline
   text(scoreText, width/2 - 3, scoreY);
@@ -156,13 +156,12 @@ void keyPressed() {
       gameState = 2;
       
     } else if (key == 'h' || key == 'H') {
-      // Audio transition and safety stops
+      // audio transition and safety stops
       bgmMenu.stop();
       songEasy.stop(); 
       songHard.stop();
       
       songHard.play();
-      // FIXED: Now properly sets up the Hard game, 160 BPM, speed 13.0, hard track
       currentGame = new Game(160, 13.0, songHard); 
       gameState = 3; 
       
@@ -171,7 +170,7 @@ void keyPressed() {
     }
   } else if (gameState == 1 || gameState == 4) {
     if (key == 'b' || key == 'B') {
-      // Ensure all game songs are fully stopped when returning to menu
+      //all game songs are fully stopped when returning to menu
       songEasy.stop();
       songHard.stop();
       if (!bgmMenu.isPlaying()) bgmMenu.loop(); 
@@ -185,7 +184,6 @@ void keyPressed() {
 
 // CLASSES
 
-// Class for holding all functionalities within the game. 
 // game loop, checkInput, and spawnNotes functions.
 class Game {
   int bpm;
