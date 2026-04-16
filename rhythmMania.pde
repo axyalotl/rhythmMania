@@ -10,12 +10,16 @@ int finalScore = 0; // Stores the score to show on the end screen
 // SoundFile easySong, hardSong, hitSound, clickSound;
 PImage bgMain, bgEasy, bgHard, mikuImg;
 SoundFile sfxPerfect, sfxPop, bgmMenu, songEasy, songHard;
+// audio global variable
+float songVolume = .1;
+// SFX global variable
+float sfxVolume = .2;
 
 // SETUP
 void setup() {
   size(800, 600);
   
-  frameRate(30); 
+  frameRate(60); 
   smooth(4);
   
   // TODO: Load images and sounds here
@@ -36,6 +40,8 @@ void setup() {
   
   // start menu music on loop
   bgmMenu.loop();
+  // menu music volume
+  bgmMenu.amp(songVolume);
 }
 
 // main screen for navigation
@@ -152,7 +158,8 @@ void keyPressed() {
       songEasy.stop();
       
       songEasy.play();
-      currentGame = new Game(100, 7.0, songEasy);
+      songEasy.amp(songVolume);
+      currentGame = new Game(100, 3.5, songEasy);
       gameState = 2;
       
     } else if (key == 'h' || key == 'H') {
@@ -162,7 +169,8 @@ void keyPressed() {
       songHard.stop();
       
       songHard.play();
-      currentGame = new Game(160, 13.0, songHard); 
+      songHard.amp(songVolume);
+      currentGame = new Game(160, 6.5, songHard); 
       gameState = 3; 
       
     } else if (key == 'm' || key == 'M') {
@@ -173,11 +181,24 @@ void keyPressed() {
       //all game songs are fully stopped when returning to menu
       songEasy.stop();
       songHard.stop();
-      if (!bgmMenu.isPlaying()) bgmMenu.loop(); 
+      bgmMenu.stop();
+      bgmMenu.loop(); 
+      bgmMenu.amp(songVolume);
       gameState = 0;
     }
   } else if (gameState == 2 || gameState == 3) {
-    currentGame.checkInput(keyCode); 
+      if (key == 'b' || key == 'B') {
+        //all game songs are fully stopped when returning to menu
+        songEasy.stop();
+        songHard.stop();
+        bgmMenu.stop();
+        bgmMenu.loop(); 
+        bgmMenu.amp(songVolume);
+        gameState = 0;
+      }
+      else {
+        currentGame.checkInput(keyCode); 
+      }
   }
 }
 
@@ -334,21 +355,27 @@ class Game {
             combo += 1;
             feedbackColor = color(0, 255, 255);
             displayText = "PERFECT";
+            sfxPerfect.stop();
             sfxPerfect.play();
+            sfxPerfect.amp(sfxVolume);
           }
           else if (distance < 20) {
             score += 50;
             combo += 1;
             feedbackColor = color(50, 255, 50);
             displayText = "GOOD";
+            sfxPop.stop();
             sfxPop.play();
+            sfxPop.amp(sfxVolume);
           }
           else {
             score += 25;
             combo = 0;
             feedbackColor = color(255, 150, 0);
             displayText = "POOR";
+            sfxPop.stop();
             sfxPop.play();
+            sfxPop.amp(sfxVolume);
           }
         // miss
         } else {
