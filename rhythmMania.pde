@@ -5,6 +5,7 @@ import processing.sound.*;
 int gameState = 0; // 0: Menu, 1: HowToPlay, 2: Easy, 3: Hard
 Game currentGame;
 int finalScore = 0; // Stores the score to show on the end screen
+int finalMaxScore = 0;
 // TODO: insert media into data folder
 // PImage mikuDance, bgImage, noteIcon;
 // SoundFile easySong, hardSong, hitSound, clickSound;
@@ -110,10 +111,38 @@ void userManual() {
 void gameOverScreen() {
   textAlign(CENTER, CENTER);
   
-  float titleY = height/2 - 60;
-  float scoreY = height/2 + 10;
+  float titleY = height/2 - 90;
+  float scoreY = height/2 - 10;
+  float gradeY = height/2 + 60;
   String titleText = "SONG COMPLETE!";
   String scoreText = "Final Score: " + finalScore;
+  
+  float accuracy = 0;
+  if (finalMaxScore > 0) {
+    accuracy = ((float)finalScore / finalMaxScore) * 100;
+  }
+  
+  String grade = "F";
+  color gradeColor =   color(255, 50, 50);
+  
+  if (accuracy >= 95) {
+    grade = "S";
+    gradeColor = color(255, 215, 0);
+  } else if (accuracy >= 85) {
+    grade = "A";
+    gradeColor = color(50, 255, 50);
+  } else if (accuracy >= 75) {
+    grade = "B";
+    gradeColor = color(50, 150, 255);
+  } else if (accuracy >= 65) {
+    grade = "C";
+    gradeColor = color(255, 255, 0);
+  } else if (accuracy >= 55) {
+    grade = "D";
+    gradeColor = color(255, 150, 0);
+  }
+  
+  String gradeText = "Rank: " + grade;
   
   textSize(50);
   fill(0); // Black outline
@@ -126,20 +155,25 @@ void gameOverScreen() {
   text(titleText, width/2, titleY);
   
   // score Text with Outline
+  // score text 
   textSize(40);
-  fill(0); // Black outline
-  text(scoreText, width/2 - 3, scoreY);
-  text(scoreText, width/2 + 3, scoreY);
-  text(scoreText, width/2, scoreY - 3);
-  text(scoreText, width/2, scoreY + 3);
+  fill(0); // Black shadow
+  text(scoreText, width/2 + 2, scoreY + 2); 
   
   fill(0, 255, 255); // Cyan main text
   text(scoreText, width/2, scoreY);
   
-  // Instruction text
+  // grade text
+  textSize(60);
+  fill(0); // Black shadow
+  text(gradeText, width/2 + 3, gradeY + 3);
+  
+  fill(gradeColor); // Main grade color
+  text(gradeText, width/2, gradeY);
+  
   fill(255, 255, 0);
   textSize(24);
-  text("Press 'B' to return to Menu", width/2, height/2 + 100);
+  text("Press 'B' to return to Menu", width/2, height/2 + 140);
 }
 
 // INTERACTIONS
@@ -216,6 +250,9 @@ class Game {
   SoundFile track;    // The song currently playing
   int gameStartTime;  // Tracks when the level started
   
+  // note count to calculate grade
+  int noteCount;
+  
   // target zone properties
   float targetX = 150; 
   float targetY; 
@@ -237,6 +274,7 @@ class Game {
     gameStartTime = millis();
     
     score = 0;
+    noteCount = 0;
     displayText = "";
     feedbackTimer = 0;
     combo = 0;
@@ -248,6 +286,7 @@ class Game {
     // If 1000ms has passed (giving the song time to start) AND the song stops playing
     if (millis() - gameStartTime > 1000 && !track.isPlaying()) {
       finalScore = score; // Save the score globally
+      finalMaxScore = noteCount * 100; // calculate max score at the end
       gameState = 4;      // Move to Game Over screen
       return;             // Stop drawing the game
     }
@@ -310,6 +349,7 @@ class Game {
     if (millis() - lastBeatTime >= msPerBeat) {
       int randomDirection = int(random(4)); // 0: Left, 1: Up, 2: Down, 3: Right
       activeNotes.add(new Note(randomDirection, height/2, currentSpeed));
+      noteCount ++;
       lastBeatTime = millis();
     }
   }
