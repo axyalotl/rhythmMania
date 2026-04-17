@@ -219,9 +219,29 @@ void gameOverScreen() {
   fill(gradeColor); // Main grade color
   text(gradeText, width/2, gradeY);
   
-  fill(255, 255, 0);
+  // Button to return to main menu
+  float btnWidth = 200;
+  float btnHeight = 50;
+  float btnX = width/2;
+  float btnY = height/2 + 150;
+  
+  rectMode(CENTER);
+  
+  // check if mouse is hovering over the button for a visual effect
+  if (mouseX > btnX - btnWidth/2 && mouseX < btnX + btnWidth/2 && 
+      mouseY > btnY - btnHeight/2 && mouseY < btnY + btnHeight/2) {
+    fill(200, 200, 0); // Darker yellow hover state
+  } else {
+    fill(255, 255, 0); // Normal yellow
+  }
+  
+  // Draw the button box
+  rect(btnX, btnY, btnWidth, btnHeight, 10); 
+  
+  // Draw the button text
+  fill(0);
   textSize(24);
-  text("Press 'B' to return to Menu", width/2, height/2 + 140);
+  text("Main Menu", btnX, btnY - 4);
 }
 
 // INTERACTIONS
@@ -318,6 +338,28 @@ void mousePressed() {
     else if (overButton(width/2, startY + 165, button_width, button_height)) {
       exit();
     }
+  }
+  else if (gameState == 4) {
+    // Game Over Screen Button Logic
+    float btnWidth = 200;
+    float btnHeight = 50;
+    float btnX = width/2;
+    float btnY = height/2 + 150;
+    
+    // If the mouse clicks inside the button's boundaries
+    if (mouseX > btnX - btnWidth/2 && mouseX < btnX + btnWidth/2 && 
+        mouseY > btnY - btnHeight/2 && mouseY < btnY + btnHeight/2) {
+      
+      songEasy.stop();
+      songHard.stop();
+      if (!bgmMenu.isPlaying()) bgmMenu.loop(); 
+      gameState = 0; // Go back to menu
+    }
+  }
+  else if (gameState == 1) {
+    // If on the manual screen, clicking anywhere goes back to the menu
+    if (!bgmMenu.isPlaying()) bgmMenu.loop(); 
+    gameState = 0;
   }
 }
 
