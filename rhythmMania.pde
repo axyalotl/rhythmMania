@@ -81,11 +81,59 @@ void menu() {
   textSize(40);
   text("RHYTHM MANIA", width/2, height/2 - 50);
   
+  // menu buttons setup
+  rectMode(CENTER);
+  float button_width = 400;
+  float button_height = 50;
+  float startY = height/2 + 10;
+  
+  // easy button
+  // dynamic button coloring
+  if (overButton(width / 2, startY, button_width, button_height)) {
+    fill(150, 150, 150, 200);
+  } else {
+    fill(50, 50, 50, 200);
+  }
+  rect(width / 2, startY, button_width, button_height, 10);
+  fill(255);
   textSize(20);
-  text("Press 'E' for Easy Mode (100 BPM)", width/2, height/2 + 20);
-  text("Press 'H' for Hard Mode (160 BPM)", width/2, height/2 + 50);
-  text("Press 'M' for User Manual", width/2, height/2 + 80);
-  text("Press 'Q' to Quit", width/2, height/2 + 110);
+  text("(E) Easy Mode - 100 BPM", width / 2, startY);
+  
+  // hard mode
+  if (overButton(width / 2, startY + 55, button_width, button_height)) {
+    fill(150, 150, 150, 200);
+  } else {
+    fill(50, 50, 50, 200);
+  }
+  rect(width / 2, startY + 55, button_width, button_height, 10);
+  fill(255);
+  textSize(20);
+  text("(H) Hard Mode - 160 BPM", width / 2, startY + 55);
+  
+  // user manual
+  if (overButton(width / 2, startY + 110, button_width, button_height)) {
+    fill(150, 150, 150, 200);
+  } else {
+    fill(50, 50, 50, 200);
+  }
+  rect(width / 2, startY + 110, button_width, button_height, 10);
+  fill(255);
+  textSize(20);
+  text("(M) User Manual", width / 2, startY + 110);
+  
+  // quit button
+  if (overButton(width / 2, startY + 165, button_width, button_height)) {
+    fill(150, 150, 150, 200);
+  } else {
+    fill(50, 50, 50, 200);
+  }
+  rect(width / 2, startY + 165, button_width, button_height, 10);
+  fill(255);
+  textSize(20);
+  text("(Q) Quit", width / 2, startY + 165);
+  
+  // change rect mode back to corner
+  rectMode(CORNER);
   
   if (mikuImg != null) {
     image(mikuImg, width - 200, height - 200, 150, 150); 
@@ -236,7 +284,49 @@ void keyPressed() {
   }
 }
 
+void mousePressed() {
+  if (gameState == 0) {
+    // button config
+    float button_width = 350;
+    float button_height = 45;
+    float startY = height/2 + 10;
+    // checks if button is clicked, stop all music and play the easy song, set to easy state
+    if (overButton(width / 2, startY, button_width, button_height)) {
+      bgmMenu.stop();
+      songHard.stop();
+      songEasy.stop();
+      songEasy.play();
+      songEasy.amp(songVolume);
+      currentGame = new Game(100, 3.5, songEasy);
+      gameState = 2;
+    }
+    // same as above but for hard mode
+    else if (overButton(width / 2, startY + 55, button_width, button_height)) {
+      bgmMenu.stop();
+      songHard.stop();
+      songEasy.stop();
+      songHard.play();
+      songHard.amp(songVolume);
+      currentGame = new Game(160, 6.5, songHard);
+      gameState = 3;
+    } 
+    // opens user manual
+    else if (overButton(width/2, startY + 110, button_width, button_height)) {
+      gameState = 1;
+    } 
+    // exits the game
+    else if (overButton(width/2, startY + 165, button_width, button_height)) {
+      exit();
+    }
+  }
+}
 
+boolean overButton(float x, float y, float width_rect, float height_rect) {
+  if (mouseX >= x - width_rect/2 && mouseX <= x + width_rect/2 && mouseY >= y - height_rect/2 && mouseY <= y + height_rect/2) {
+    return true;
+  }
+  return false;
+}
 // CLASSES
 
 // game loop, checkInput, and spawnNotes functions.
